@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encuentra tu canción favorita</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            max-width: 600px;
+            margin: auto;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            border-radius: 10px;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        button {
+            background: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            margin: 5px;
+            border-radius: 5px;
+        }
+        button:disabled {
+            background: gray;
+            cursor: not-allowed;
+        }
+        input {
+            padding: 10px;
+            width: 80%;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Encuentra tu canción favorita 🎵</h1>
+        <p>Para encontrar tu canción, graba un audio tarareando la canción (mínimo 20 segundos) e introduce la letra que recuerdes.</p>
+
+        <h2>Ingresa el fragmento de la canción</h2>
+        <form id="formulario" onsubmit="manejarFormulario(event)">
+            <input type="text" id="texto" name="texto" placeholder="Escribe parte de la letra..." required>
+            <button type="submit">Enviar</button>
+        </form>
+        <p id="resultado" class="hidden"></p>
+
+        <h2>Graba tu audio</h2>
+        <button id="start">🎤 Iniciar Grabación</button>
+        <button id="stop" disabled>🛑 Detener Grabación</button>
+        
+        <h3>Reproducir Grabación:</h3>
+        <audio id="audio" controls></audio>
+    </div>
+
+    <script>
+        function manejarFormulario(event) {
+            event.preventDefault(); 
+            let textoIngresado = document.getElementById("texto").value;
+            
+            document.getElementById("formulario").style.display = "none";
+            let resultado = document.getElementById("resultado");
+            resultado.textContent = "Texto ingresado: " + textoIngresado;
+            resultado.classList.remove("hidden");
+        }
+
+        let mediaRecorder;
+        let audioChunks = [];
+
+        document.getElementById("start").addEventListener("click", async () => {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = []; // Limpiar el array de grabaciones anteriores
+
+            mediaRecorder.ondataavailable = event => {
+                audioChunks.push(event.data);
+            };
+
+            mediaRecorder.onstop = () => {
+                const audioBlob = new Blob(audioChunks, { type: "audio/wav" });
+                const audioUrl = URL.createObjectURL(audioBlob);
+                document.getElementById("audio").src = audioUrl;
+            };
+
+            mediaRecorder.start();
+            document.getElementById("start").disabled = true;
+            document.getElementById("stop").disabled = false;
+        });
+
+        document.getElementById("stop").addEventListener("click", () => {
+            if (mediaRecorder && mediaRecorder.state !== "inactive") {
+                mediaRecorder.stop();
+            }
+            document.getElementById("start").disabled = false;
+            document.getElementById("stop").disabled = true;
+        });
+    </script>
+
+</body>
+</html>
+
+<!-- Espacio para el enlace a la canción -->
+<div id="link-container"></div>
+
+<script>
+    // URLs de la librería de canciones
+    const urls = [
+        "https://youtu.be/KHWjajpYs1I?si=PQZ33C3-j0BAdMmu ",
+        "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhk4pmxsZUBBVb_faRm-SavaieebFjujwPhL0QSE_SdBnV1anZGetjrx9b5Kh10S01YSba3M53hC5V_wCX-Re73Q3luxwpDx7py3QSeRQtxSt_jTZcuqQYWkVnAX90Bm8QKKW6IPKaIsmA9/s1600/430913_191319187639928_122466087858572_283803_765063304_n.jpg",
+            "https://youtu.be/ue9vBU0bjA4?si=tdDJEvkC8Nxfrurq",
+            "https://youtu.be/xvFZjo5PgG0?si=a33-7cQMhrrwya0M",
+            "https://youtu.be/jHWBFyZcLPg?si=sYHi4nK80NHnxUt8",
+            "https://youtu.be/wAMZ6KpMGQI?si=m6BW0QxQY8HQtAyf",
+            "https://youtu.be/Qk-9xtzaprc?si=m7t7I6Q55LXirEL9"
+    ];
+
+    // Función para seleccionar un enlace aleatorio
+    function obtenerEnlaceAleatorio() {
+        const indiceAleatorio = Math.floor(Math.random() * urls.length);
+        return urls[indiceAleatorio];
+    }
+
+    // Obtener el elemento de audio
+    let audioElement = document.getElementById('audio');
+    let linkContainer = document.getElementById('link-container');
+
+    // Mostrar el enlace aleatorio después de que termine la reproducción
+    audioElement.onended = function() {
+        const enlaceAleatorio = obtenerEnlaceAleatorio();
+        linkContainer.innerHTML = `
+            <p><a href="${enlaceAleatorio}" target="_blank">ESTA ES LA CANCIÓN</a></p>
+        `;
+    };     
+</script>
